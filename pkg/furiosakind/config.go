@@ -3,34 +3,15 @@ package furiosakind
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"os"
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
+	"github.com/NVIDIA/go-nvlib/pkg/nvml"
 	"gopkg.in/yaml.v2"
+	"k8s.io/apimachinery/pkg/util/rand"
 	kind "sigs.k8s.io/kind/pkg/apis/config/v1alpha4"
 )
-
-type Config struct {
-	*kind.Cluster
-	stdout io.Writer
-	stderr io.Writer
-}
-
-type ConfigOptions struct {
-	defaultName        string
-	image              string
-	stdout             io.Writer
-	stderr             io.Writer
-	extraFuncMap       template.FuncMap
-	configTemplatePath string
-	configTemplate     []byte
-	configValuesPath   string
-	configValues       []byte
-}
-
-type ConfigOption func(*ConfigOptions)
 
 func NewConfig(opts ...ConfigOption) (*Config, error) {
 	o := ConfigOptions{}
@@ -38,7 +19,10 @@ func NewConfig(opts ...ConfigOption) (*Config, error) {
 		opt(&o)
 	}
 	if o.defaultName == "" {
-		o.defaultName = fmt.Sprintf("furiosa-kind-%s", rand.String(5))
+		o.defaultName = fmt.Sprintf("nvkind-%s", rand.String(5))
+	}
+	if o.nvml == nil {
+		o.nvml = nvml.New()
 	}
 	if o.stdout == nil {
 		o.stdout = os.Stdout
@@ -100,6 +84,7 @@ func NewConfig(opts ...ConfigOption) (*Config, error) {
 
 	config := &Config{
 		Cluster: &cluster,
+		nvml:    o.nvml,
 		stdout:  o.stdout,
 		stderr:  o.stderr,
 	}
@@ -108,7 +93,9 @@ func NewConfig(opts ...ConfigOption) (*Config, error) {
 }
 
 func (o *ConfigOptions) buildFuncMap() template.FuncMap {
-	funcmap := map[string]any{}
+	funcmap := map[string]any{
+		"numGPUs": o.numGPUs,
+	}
 	for k, v := range o.extraFuncMap {
 		funcmap[k] = v
 	}
@@ -118,11 +105,26 @@ func (o *ConfigOptions) buildFuncMap() template.FuncMap {
 	return funcmap
 }
 
+func (o *ConfigOptions) numGPUs() (int, error) {
+	if ret := o.nvml.Init(); ret != nvml.SUCCESS {
+		return -1, fmt.Errorf("running nvml.Init: %w", ret)
+	}
+	defer func() { _ = o.nvml.Shutdown() }()
+
+	numGPUs, ret := o.nvml.DeviceGetCount()
+	if ret != nvml.SUCCESS {
+		return -1, fmt.Errorf("running nvml.DeviceGetCount: %w", ret)
+	}
+
+	return numGPUs, nil
+}
+
 func convertToMap(data any) any {
 	switch v := data.(type) {
 	case map[any]any:
 		result := make(map[string]any)
 		for key, val := range v {
+			//nolint:forcetypeassert
 			result[key.(string)] = convertToMap(val)
 		}
 		return result

@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	nvkindClusterConfigName = "nvkind-cluster-config"
+	nvkindClusterConfigName = "furiosakind-cluster-config"
 )
 
 func GetClusterNames() (sets.Set[string], error) {
