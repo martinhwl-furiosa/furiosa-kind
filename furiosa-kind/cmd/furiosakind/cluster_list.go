@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/klueska/kind-with-gpus-examples/pkg/nvkind"
+	"github.com/martinhwl-furiosa/furiosa-kind/pkg/furiosakind"
 	"github.com/urfave/cli/v2"
 )
 
@@ -17,7 +17,7 @@ func BuildClusterListCommand() *cli.Command {
 }
 
 func runClusterList(c *cli.Context) error {
-	clusters, err := nvkind.GetClusterNames()
+	clusters, err := furiosakind.GetClusterNames()
 	if err != nil {
 		return fmt.Errorf("getting cluster names: %w", err)
 	}

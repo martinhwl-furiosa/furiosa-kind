@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/klueska/kind-with-gpus-examples/pkg/nvkind"
+	"github.com/martinhwl-furiosa/furiosa-kind/pkg/furiosakind"
 	"github.com/urfave/cli/v2"
 )
 
@@ -84,7 +84,7 @@ func runClusterCreate(c *cli.Context, f *ClusterCreateFlags) error {
 		return fmt.Errorf("gathering cluster options: %w", err)
 	}
 
-	cluster, err := nvkind.NewCluster(clusterOptions...)
+	cluster, err := furiosakind.NewCluster(clusterOptions...)
 	if err != nil {
 		return fmt.Errorf("new cluster: %w", err)
 	}
@@ -121,15 +121,15 @@ func runClusterCreate(c *cli.Context, f *ClusterCreateFlags) error {
 	return nil
 }
 
-func (f *ClusterCreateFlags) gatherConfigOptions() ([]nvkind.ConfigOption, error) {
-	var configOptions []nvkind.ConfigOption
+func (f *ClusterCreateFlags) gatherConfigOptions() ([]furiosakind.ConfigOption, error) {
+	var configOptions []furiosakind.ConfigOption
 
 	if f.Image != "" {
-		configOptions = append(configOptions, nvkind.WithImage(f.Image))
+		configOptions = append(configOptions, furiosakind.WithImage(f.Image))
 	}
 
 	if f.ConfigTemplate != "" {
-		configOptions = append(configOptions, nvkind.WithConfigTemplate(f.ConfigTemplate))
+		configOptions = append(configOptions, furiosakind.WithConfigTemplate(f.ConfigTemplate))
 	}
 
 	if f.ConfigValues != "" {
@@ -149,21 +149,21 @@ func (f *ClusterCreateFlags) gatherConfigOptions() ([]nvkind.ConfigOption, error
 			}
 		}
 
-		configOptions = append(configOptions, nvkind.WithConfigValues(configValues))
+		configOptions = append(configOptions, furiosakind.WithConfigValues(configValues))
 	}
 
 	return configOptions, nil
 }
 
-func (f *ClusterCreateFlags) gatherClusterOptions() ([]nvkind.ClusterOption, error) {
-	var clusterOptions []nvkind.ClusterOption
+func (f *ClusterCreateFlags) gatherClusterOptions() ([]furiosakind.ClusterOption, error) {
+	var clusterOptions []furiosakind.ClusterOption
 
 	if f.Name != "" {
-		clusterOptions = append(clusterOptions, nvkind.WithName(f.Name))
+		clusterOptions = append(clusterOptions, furiosakind.WithName(f.Name))
 	}
 
 	if f.KubeConfig != "" {
-		clusterOptions = append(clusterOptions, nvkind.WithKubeConfig(f.KubeConfig))
+		clusterOptions = append(clusterOptions, furiosakind.WithKubeConfig(f.KubeConfig))
 	}
 
 	configOptions, err := f.gatherConfigOptions()
@@ -172,25 +172,25 @@ func (f *ClusterCreateFlags) gatherClusterOptions() ([]nvkind.ClusterOption, err
 	}
 
 	if len(configOptions) != 0 {
-		config, err := nvkind.NewConfig(configOptions...)
+		config, err := furiosakind.NewConfig(configOptions...)
 		if err != nil {
 			return nil, fmt.Errorf("new config: %w", err)
 		}
-		clusterOptions = append(clusterOptions, nvkind.WithConfig(config))
+		clusterOptions = append(clusterOptions, furiosakind.WithConfig(config))
 	}
 
 	return clusterOptions, nil
 }
 
-func (f *ClusterCreateFlags) gatherClusterCreateOptions() ([]nvkind.ClusterCreateOption, error) {
-	var clusterCreateOptions []nvkind.ClusterCreateOption
+func (f *ClusterCreateFlags) gatherClusterCreateOptions() ([]furiosakind.ClusterCreateOption, error) {
+	var clusterCreateOptions []furiosakind.ClusterCreateOption
 
 	if f.Retain {
-		clusterCreateOptions = append(clusterCreateOptions, nvkind.WithRetain())
+		clusterCreateOptions = append(clusterCreateOptions, furiosakind.WithRetain())
 	}
 
 	if f.Wait != 0 {
-		clusterCreateOptions = append(clusterCreateOptions, nvkind.WithWait(f.Wait))
+		clusterCreateOptions = append(clusterCreateOptions, furiosakind.WithWait(f.Wait))
 	}
 
 	return clusterCreateOptions, nil

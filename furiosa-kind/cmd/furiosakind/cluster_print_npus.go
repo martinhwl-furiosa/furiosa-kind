@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/klueska/kind-with-gpus-examples/pkg/nvkind"
+	"github.com/martinhwl-furiosa/furiosa-kind/pkg/furiosakind"
 	"github.com/urfave/cli/v2"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 )
 
 type NodeGPUs struct {
-	Node    string           `json:"node"`
-	GPUInfo []nvkind.GPUInfo `json:"gpus"`
+	Node    string                `json:"node"`
+	GPUInfo []furiosakind.GPUInfo `json:"gpus"`
 }
 
 type ClusterPrintGPUsFlags struct {
@@ -54,7 +54,7 @@ func runClusterPrintGPUs(c *cli.Context, f *ClusterPrintGPUsFlags) error {
 		return fmt.Errorf("updating flags with defaults: %w", err)
 	}
 
-	clusters, err := nvkind.GetClusterNames()
+	clusters, err := furiosakind.GetClusterNames()
 	if err != nil {
 		return fmt.Errorf("getting cluster names: %w", err)
 	}
@@ -63,7 +63,7 @@ func runClusterPrintGPUs(c *cli.Context, f *ClusterPrintGPUsFlags) error {
 		return fmt.Errorf("unknown cluster: %v", f.Name)
 	}
 
-	cluster, err := nvkind.NewCluster(nvkind.WithName(f.Name))
+	cluster, err := furiosakind.NewCluster(furiosakind.WithName(f.Name))
 	if err != nil {
 		return fmt.Errorf("getting cluster: %w", err)
 	}
